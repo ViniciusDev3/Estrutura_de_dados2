@@ -1,76 +1,114 @@
 #include <iostream>
 #include <string>
-#include <vector>
+#include <tuple>
 
 using namespace std;
 
-enum DataType {INT, CHAR, STRING};
-
-struct FlexData {
-    DataType type;
-    union {
-        int intValue;
-        char charValue;
-    };
-    string stringValue;
-
-    FlexData(int value) : type(INT), intValue(value) {}
-    FlexData(char value) : type(CHAR), charValue(value) {}
-};
-
-claData {
-private: string data;
-    AVL* left;
-    AVL* right;
+class ABB {
+private: 
+    string data;
+    ABB* left;
+    ABB* right;
+    
 public:
-    AVL( std::string value): data(value), left(nullptr), right(nullptr) {}
+    ABB(string value): data(value), left(nullptr), right(nullptr) {}
 
-    AVL* insert (string dataNew) {
-        bool number {false};
-        if (!dataNew.empty() && all_of(dataNew.begin(), dataNew.end(), [](char c) {
-            return;
-        })){
-            number = true;
+    static tuple< int, string> key(const string& data) {
+        try {
+            size_t value;
+            stoi(data, &value);
+            if (value == data.size())
+            {
+                return {0, data};
+            }
+        } catch (...) {};
+
+        if (data.size() == 1)
+        {
+            return {1, data};
         }
-        
-        if (number == true) {
+        return {2, data};
+    }
+
+    ABB* insert (string dataNew) {
+        auto [priorityNew, _] = key(dataNew);
+        auto [priorityCurrent, __] = key(this->data);
+
+        int priority = priorityNew;
+
+        if (priority == 0) {
             if (stoi(dataNew) < stoi(data)) {
                 if (left == nullptr)
                 {
-                    left = new AVL(dataNew);
+                    left = new ABB(dataNew);
                 } else {
                     left = left->insert(dataNew);
                 }
             } else {
                 if (right == nullptr)
                 {
-                    right = new AVL(dataNew);
+                    right = new ABB(dataNew);
                 } else {
                     right = right->insert(dataNew);
                 }
             }      
-        } else {
-            if (dataNew.length() < data.length()) {
+        } else if (priority == 1) {
+            if (dataNew < data) {
                 if (left == nullptr)
                 {
-                    left = new AVL(dataNew);
+                    left = new ABB(dataNew);
                 } else {
                     left = left->insert(dataNew);
                 }
             } else {
                 if (right == nullptr)
                 {
-                    right = new AVL(dataNew);
+                    right = new ABB(dataNew);
+                } else {
+                    right = right->insert(dataNew);
+                }
+            }      
+        } else if (priority == 2) {
+            if (dataNew.length() < data.length()) {
+                if (left == nullptr)
+                {
+                    left = new ABB(dataNew);
+                } else {
+                    left = left->insert(dataNew);
+                }
+            } else {
+                if (right == nullptr)
+                {
+                    right = new ABB(dataNew);
                 } else {
                     right = right->insert(dataNew);
                 }
             }      
         }
-        
+        return this;
+    }
+
+    void printInOrder() {
+        if (left != nullptr) {
+            left->printInOrder();  // Imprime a subárvore esquerda
+        }
+        cout << data << " ";  // Imprime o valor da raiz
+        if (right != nullptr) {
+            right->printInOrder();  // Imprime a subárvore direita
+        }
     }
 };
 
 int main() {
-    AVL* root = new AVL("12");
+    ABB* root = new ABB("12");
     root->insert("32");
+    root->insert("a");
+    root->insert("8");
+    root->insert("verdade");
+
+    cout << "Árvore em ordem: ";
+    root->printInOrder();
+    cout << endl;
+
+    return 0;
 }
