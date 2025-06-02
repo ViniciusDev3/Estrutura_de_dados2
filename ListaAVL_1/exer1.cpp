@@ -30,85 +30,110 @@ public:
         return {2, data};
     }
 
-    ABB* insert (string dataNew) {
+    ABB* insert(string dataNew) {
         auto [priorityNew, _] = key(dataNew);
         auto [priorityCurrent, __] = key(this->data);
-
-        int priority = priorityNew;
-
-        if (priority == 0) {
-            if (stoi(dataNew) < stoi(data)) {
-                if (left == nullptr)
-                {
-                    left = new ABB(dataNew);
-                } else {
-                    left = left->insert(dataNew);
-                }
+    
+        if (priorityNew < priorityCurrent) {
+            if (left == nullptr) {
+                left = new ABB(dataNew);
             } else {
-                if (right == nullptr)
-                {
-                    right = new ABB(dataNew);
-                } else {
-                    right = right->insert(dataNew);
-                }
-            }      
-        } else if (priority == 1) {
-            if (dataNew < data) {
-                if (left == nullptr)
-                {
-                    left = new ABB(dataNew);
-                } else {
-                    left = left->insert(dataNew);
-                }
+                left = left->insert(dataNew);
+            }
+        } else if (priorityNew > priorityCurrent) {
+            if (right == nullptr) {
+                right = new ABB(dataNew);
             } else {
-                if (right == nullptr)
-                {
-                    right = new ABB(dataNew);
+                right = right->insert(dataNew);
+            }
+        } else {
+            // Se mesma prioridade, comparar valores
+            if (priorityNew == 0) { // Comparação numérica
+                if (stoi(dataNew) < stoi(data)) {
+                    if (left == nullptr) {
+                        left = new ABB(dataNew);
+                    } else {
+                        left = left->insert(dataNew);
+                    }
                 } else {
-                    right = right->insert(dataNew);
+                    if (right == nullptr) {
+                        right = new ABB(dataNew);
+                    } else {
+                        right = right->insert(dataNew);
+                    }
                 }
-            }      
-        } else if (priority == 2) {
-            if (dataNew.length() < data.length()) {
-                if (left == nullptr)
-                {
-                    left = new ABB(dataNew);
+            } else { // Comparação alfabética para letras ou palavras
+                if (dataNew < data) {
+                    if (left == nullptr) {
+                        left = new ABB(dataNew);
+                    } else {
+                        left = left->insert(dataNew);
+                    }
                 } else {
-                    left = left->insert(dataNew);
+                    if (right == nullptr) {
+                        right = new ABB(dataNew);
+                    } else {
+                        right = right->insert(dataNew);
+                    }
                 }
-            } else {
-                if (right == nullptr)
-                {
-                    right = new ABB(dataNew);
-                } else {
-                    right = right->insert(dataNew);
-                }
-            }      
+            }
         }
         return this;
     }
 
-    void printInOrder() {
+    void printInOrder(int nivel, string lado) {
         if (left != nullptr) {
-            left->printInOrder();  // Imprime a subárvore esquerda
+            left->printInOrder(nivel + 1, "/");  
         }
-        cout << data << " ";  // Imprime o valor da raiz
+        string space(6 * nivel, ' ');
+        cout << space << lado << "-->" << data  << "\n";   
         if (right != nullptr) {
-            right->printInOrder();  // Imprime a subárvore direita
+            right->printInOrder(nivel + 1, "\\");  
+        }
+    }
+
+    void search(string value) {
+        if (left != nullptr) {
+            left->search(value);  
+        }
+        if (value == data)
+        {
+            cout << "Valor encontrado: " << data  << "\n";
+        }
+        if (right != nullptr) {
+            right->search(value);  
         }
     }
 };
 
 int main() {
-    ABB* root = new ABB("12");
-    root->insert("32");
-    root->insert("a");
-    root->insert("8");
-    root->insert("verdade");
+    ABB* root = nullptr;
+   
+    string valores[] = {"12", "a", "texto", "5", "z", "dados"};
 
-    cout << "Árvore em ordem: ";
-    root->printInOrder();
+    for (string v : valores) {
+        if (root == nullptr) {
+            root = new ABB(v);
+        } else {
+            root = root->insert(v);
+        }
+    }
+
+    cout << "Árvore em ordem: \n";
+    root->printInOrder(0, "");
     cout << endl;
+
+    cout << "Digite uma nova entrada: ";
+    string value;
+    cin >> value;
+    root->insert(value);
+    cout << "Árvore em ordem: \n";
+    root->printInOrder(0, "");
+    cout << endl;
+
+    cout << "Digite para procurar um valor na arvore: \n";
+    cin >> value;
+    root->search(value);
 
     return 0;
 }

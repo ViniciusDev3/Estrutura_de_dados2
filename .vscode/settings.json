@@ -1,6 +1,16 @@
 {
     "files.associations": {
         "iostream": "cpp",
-        "new": "cpp"
+        "new": "cpp",
+        "algorithm": "cpp",
+        "optional": "cpp",
+        "system_error": "cpp",
+        "array": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp"
     }
 }
