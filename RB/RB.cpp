@@ -1,5 +1,6 @@
-#include<iostream>
-#include<string>
+#include <iostream>
+#include <string>
+#include <algorithm>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ public:
     RBNode* right;
     RBNode* parent;
 
-    RBNode (int value){
+    RBNode(int value) {
         data = value;
         color = RED;
         left = nullptr;
@@ -21,28 +22,17 @@ public:
         parent = nullptr;
     }
 
-    void printRB (int level, std::string side, int RedBlack){
-        if (left != nullptr)
-        {
-            left->printRB(level + 1, "/", RedBlack);
+    void printRB(int level, const string& side) const {
+        if (left && left->data != 0) {
+            left->printRB(level + 1, "/");
         }
-        std::string space(6 * level, ' ');
-        string colorRB = "";
-        if (RedBlack == 1)
-        {
-            colorRB = "RED";
-        } else {
-            colorRB = "BLACK";
+        string space(6 * level, ' ');
+        string colorRB = (color == RED) ? "RED" : "BLACK";
+        if (data != 0) {
+            cout << space << side << "--> " << data << " (" << colorRB << ")\n";
         }
-        if (data == 0)
-        {
-            this;
-        } else {
-            std::cout << space << side << "-->" << data << " (" << colorRB << ")\n";
-        }
-        if (right != nullptr)
-        {
-            right->printRB(level + 1, "\\", RedBlack);
+        if (right && right->data != 0) {
+            right->printRB(level + 1, "\\");
         }
     }
 };
@@ -51,21 +41,17 @@ class RedBlackTree {
 private:
     RBNode* root;
     RBNode* NIL;
-    // Void leftRotate
 
     void rightRotate(RBNode* x) {
         RBNode* y = x->left;
         x->left = y->right;
-
-        if (y->right!= NIL)
-        {
+        if (y->right != NIL) {
             y->right->parent = x;
         }
         y->parent = x->parent;
-        if (x->parent == nullptr)
-        {
+        if (x->parent == nullptr) {
             root = y;
-        } else if ( x == x->parent->right) {
+        } else if (x == x->parent->right) {
             x->parent->right = y;
         } else {
             x->parent->left = y;
@@ -77,16 +63,13 @@ private:
     void leftRotate(RBNode* x) {
         RBNode* y = x->right;
         x->right = y->left;
-
-        if (y->left!= NIL)
-        {
+        if (y->left != NIL) {
             y->left->parent = x;
         }
         y->parent = x->parent;
-        if (x->parent == nullptr)
-        {
+        if (x->parent == nullptr) {
             root = y;
-        } else if ( x == x->parent->left) {
+        } else if (x == x->parent->left) {
             x->parent->left = y;
         } else {
             x->parent->right = y;
@@ -95,23 +78,18 @@ private:
         x->parent = y;
     }
 
-    void fixColor (RBNode* k){
+    void fixColor(RBNode* k) {
         RBNode* u;
-
-        while (k->parent != nullptr && k->parent->color == RED)
-        {
-            if (k->parent == k->parent->parent->left)
-            {
-                u = k->parent->parent->left;
-
-                if (u != nullptr && u->color == RED)
-                {
+        while (k->parent != nullptr && k->parent->color == RED) {
+            if (k->parent == k->parent->parent->left) {
+                u = k->parent->parent->right;
+                if (u != NIL && u->color == RED) {
                     u->color = BLACK;
                     k->parent->color = BLACK;
                     k->parent->parent->color = RED;
                     k = k->parent->parent;
                 } else {
-                    if(k == k->parent->left){
+                    if (k == k->parent->right) {
                         k = k->parent;
                         leftRotate(k);
                     }
@@ -120,16 +98,14 @@ private:
                     rightRotate(k->parent->parent);
                 }
             } else {
-                u = k->parent->parent->right;
-
-                if (u != nullptr && u->color == RED)
-                {
+                u = k->parent->parent->left;
+                if (u != NIL && u->color == RED) {
                     u->color = BLACK;
                     k->parent->color = BLACK;
                     k->parent->parent->color = RED;
                     k = k->parent->parent;
                 } else {
-                    if(k == k->parent->right){
+                    if (k == k->parent->left) {
                         k = k->parent;
                         rightRotate(k);
                     }
@@ -138,42 +114,111 @@ private:
                     leftRotate(k->parent->parent);
                 }
             }
-
-            if (k == root){
+            if (k == root) {
                 break;
             }
         }
         root->color = BLACK;
     }
-public:
-    RedBlackTree(){
-        NIL = new RBNode(0);
-        NIL -> color = BLACK;
-        root = NIL;
-    }
-    
-    ~RedBlackTree(){
-        clear(root);
-        delete NIL;
-    }
-    
-    void insert (int value){
-        RBNode* node = new RBNode(value);
-        node -> left = NIL;
-        node -> right = NIL;
-        node -> color = RED;
-        
-        if(root == NIL){
-            root = node;
-            root -> color = BLACK;
-            return;
+
+    void transplant(RBNode* u, RBNode* v) {
+        if (u->parent == nullptr) {
+            root = v;
+        } else if (u == u->parent->left) {
+            u->parent->left = v;
+        } else {
+            u->parent->right = v;
         }
-        
-        insertRecurvise (root, node);
-        
-        fixColor(node);
+        v->parent = u->parent;
     }
-    
+
+    RBNode* minimum(RBNode* node) {
+        while (node->left != NIL) {
+            node = node->left;
+        }
+        return node;
+    }
+
+    RBNode* maximum(RBNode* node) {
+        while (node->right != NIL) {
+            node = node->right;
+        }
+        return node;
+    }
+
+    void deleteFix(RBNode* x) {
+        while (x != root && x->color == BLACK) {
+            if (x == x->parent->left) {
+                RBNode* w = x->parent->right;
+                if (w->color == RED) {
+                    w->color = BLACK;
+                    x->parent->color = RED;
+                    leftRotate(x->parent);
+                    w = x->parent->right;
+                }
+                if (w->left->color == BLACK && w->right->color == BLACK) {
+                    w->color = RED;
+                    x = x->parent;
+                } else {
+                    if (w->right->color == BLACK) {
+                        w->left->color = BLACK;
+                        w->color = RED;
+                        rightRotate(w);
+                        w = x->parent->right;
+                    }
+                    w->color = x->parent->color;
+                    x->parent->color = BLACK;
+                    w->right->color = BLACK;
+                    leftRotate(x->parent);
+                    x = root;
+                }
+            } else {
+                RBNode* w = x->parent->left;
+                if (w->color == RED) {
+                    w->color = BLACK;
+                    x->parent->color = RED;
+                    rightRotate(x->parent);
+                    w = x->parent->left;
+                }
+                if (w->right->color == BLACK && w->left->color == BLACK) {
+                    w->color = RED;
+                    x = x->parent;
+                } else {
+                    if (w->left->color == BLACK) {
+                        w->right->color = BLACK;
+                        w->color = RED;
+                        leftRotate(w);
+                        w = x->parent->left;
+                    }
+                    w->color = x->parent->color;
+                    x->parent->color = BLACK;
+                    w->left->color = BLACK;
+                    rightRotate(x->parent);
+                    x = root;
+                }
+            }
+        }
+        x->color = BLACK;
+    }
+
+    void insertRecursive(RBNode* current, RBNode* newNode) {
+        if (newNode->data < current->data) {
+            if (current->left == NIL) {
+                current->left = newNode;
+                newNode->parent = current;
+            } else {
+                insertRecursive(current->left, newNode);
+            }
+        } else {
+            if (current->right == NIL) {
+                current->right = newNode;
+                newNode->parent = current;
+            } else {
+                insertRecursive(current->right, newNode);
+            }
+        }
+    }
+
     bool search(RBNode* n, int key) const {
         if (n == NIL) {
             return false;
@@ -182,7 +227,7 @@ public:
             return true;
         }
         if (key < n->data) {
-            return search(n->left, key); 
+            return search(n->left, key);
         } else {
             return search(n->right, key);
         }
@@ -198,53 +243,114 @@ public:
     }
 
     int getMin(RBNode* n) {
-        if (!left) return n->data;
+        if (n->left == NIL) {
+            return n->data;
+        }
         return getMin(n->left);
     }
 
     int getMax(RBNode* n) {
-        if (!right) return n->data;
-        return getMax(n->right);     
-    }
-    /*
-    int countNodes() {
-        int count = 1;
-        if(left)
-            count += left->countNodes();
-        if(right)
-            count += right->countNodes();
+        if (n->right == NIL) {
+            return n->data;
+        }
+        return getMax(n->right);
     }
 
-    int height() {
-        int leftHeight = left ? left->height() : 0;
-        int rightHeight = right ? right->height() : 0;
+    int countNodes(RBNode* n) {
+        if (n == NIL) {
+            return 0;
+        }
+        return 1 + countNodes(n->left) + countNodes(n->right);
+    }
+
+    int height(RBNode* n) {
+        if (n == NIL) {
+            return -1;
+        }
+        int leftHeight = height(n->left);
+        int rightHeight = height(n->right);
         return 1 + max(leftHeight, rightHeight);
     }
-    */
-    void insertRecurvise(RBNode* current, RBNode* newNode){
-        if(newNode->data < current->data){
-            if(current->left == NIL){
-                current->left = newNode;
-                newNode->parent = current;
-            } else {
-                insertRecurvise (current->left, newNode);
-            }
-        } else {
-            if(current->right == NIL){
-                current->right = newNode;
-                newNode->parent = current;
-            } else {
-                insertRecurvise (current->right, newNode);
-            }
-        }
+
+public:
+    RedBlackTree() {
+        NIL = new RBNode(0);
+        NIL->color = BLACK;
+        NIL->left = NIL;
+        NIL->right = NIL;
+        NIL->parent = nullptr;
+        root = NIL;
     }
-    
-    void printTree() {
-        if (root != NIL) {
-            root->printRB(0, "", root->color);
-        } else {
-            cout << "Árvore vazia." << endl;
+
+    ~RedBlackTree() {
+        clear(root);
+        delete NIL;
+    }
+
+    void insert(int value) {
+        RBNode* node = new RBNode(value);
+        node->left = NIL;
+        node->right = NIL;
+        node->parent = nullptr;
+        if (root == NIL) {
+            root = node;
+            root->color = BLACK;
+            return;
         }
+        insertRecursive(root, node);
+        fixColor(node);
+    }
+
+    bool remove(int key) {
+        RBNode* z = root;
+        while (z != NIL) {
+            if (key == z->data) {
+                break;
+            } else if (key < z->data) {
+                z = z->left;
+            } else {
+                z = z->right;
+            }
+        }
+
+        if (z == NIL) {
+            return false;
+        }
+
+        RBNode* y = z;
+        RBNode* x;
+        Color y_original_color = y->color;
+
+        if (z->left == NIL) {
+            x = z->right;
+            transplant(z, z->right);
+        } else if (z->right == NIL) {
+            x = z->left;
+            transplant(z, z->left);
+        } else {
+            // Usa o predecessor: máximo da subárvore esquerda
+            y = maximum(z->left);
+            y_original_color = y->color;
+            x = y->left;
+
+            if (y->parent != z) {
+                transplant(y, y->left);
+                y->left = z->left;
+                y->left->parent = y;
+            }
+
+            transplant(z, y);
+            y->right = z->right;
+            y->right->parent = y;
+            y->color = z->color;
+        }
+
+        if (y_original_color == BLACK) {
+            deleteFix(x);
+        }
+
+        delete z;
+        return true;
     }
 
     bool search(int key) const {
@@ -256,31 +362,60 @@ public:
     }
 
     int getMax() {
-        return getMin(root);
+        return getMax(root);
+    }
+
+    int countNodes() {
+        return countNodes(root);
+    }
+
+    int height() {
+        return height(root);
+    }
+
+    void printTree() {
+        if (root != NIL) {
+            root->printRB(0, "");
+        } else {
+            cout << "Árvore vazia." << endl;
+        }
     }
 };
 
-int main (){
+int main() {
     RedBlackTree tree;
-    
+
     tree.insert(10);
     tree.insert(12);
     tree.insert(5);
     tree.insert(4);
     tree.insert(39);
     tree.insert(17);
-    
+
     cout << "Árvore Rubro Negro" << endl;
     tree.printTree();
 
-    cout << "Digite um numero da arvore: " << endl;
+    cout << "\nDigite um numero da arvore: ";
     int key;
-    if(cin >> key) {
-        cout << (tree.search(key) ? "O numero foi encontrado\n": "O numero nao foi encontrado\n");
+    cin >> key;
+    cout << (tree.search(key) ? "O numero foi encontrado\n" : "O numero nao foi encontrado\n");
+
+    cout << "\nDigite um numero para remover: ";
+    int removeKey;
+    cin >> removeKey;
+    if (tree.remove(removeKey)) {
+        cout << removeKey << " removido com sucesso.\n";
+        cout << "\nÁrvore após remoção:" << endl;
+        tree.printTree();
+    } else {
+        cout << removeKey << " não encontrado na árvore.\n";
     }
 
-    cout << tree.getMin() << endl;
-    cout << tree.getMax() << endl;
+    cout << "\nO menor numero da arvore é: " << tree.getMin() << endl;
+    cout << "O maior numero da arvore é: " << tree.getMax() << endl;
+    cout << "Número de nós: " << tree.countNodes() << endl;
+    cout << "Altura da árvore: " << tree.height() << endl;
+
     return 0;
 }
-    ad
+
