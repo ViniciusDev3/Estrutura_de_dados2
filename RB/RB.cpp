@@ -328,7 +328,6 @@ public:
             x = z->left;
             transplant(z, z->left);
         } else {
-            // Usa o predecessor: máximo da subárvore esquerda
             y = maximum(z->left);
             y_original_color = y->color;
             x = y->left;
@@ -351,6 +350,30 @@ public:
 
         delete z;
         return true;
+    }
+
+    void inOrder(RBNode* n) {
+        if (n != NIL) {
+            inOrder(n->left);
+            cout << n->data << " ";
+            inOrder(n->right);
+        }
+    }
+    
+    void posOrder(RBNode* n) {
+        if (n != NIL) {
+            inOrder(n->left);
+            inOrder(n->right);
+            cout << n->data << " ";
+        }
+    }
+    
+    void preOrder(RBNode* n) {
+        if (n != NIL) {
+            cout << n->data << " ";
+            inOrder(n->left);
+            inOrder(n->right);
+        }
     }
 
     bool search(int key) const {
@@ -380,12 +403,27 @@ public:
             cout << "Árvore vazia." << endl;
         }
     }
+
+    void inOrder() {
+        return inOrder(root);
+    }
+
+    void posOrder() {
+        return posOrder(root);
+    }
+
+    void preOrder() {
+        return preOrder(root);
+    }
 };
 
 int main() {
     RedBlackTree tree;
 
     tree.insert(10);
+    tree.insert(8);
+    tree.insert(20);
+    tree.insert(50);
     tree.insert(12);
     tree.insert(5);
     tree.insert(4);
@@ -410,6 +448,13 @@ int main() {
     } else {
         cout << removeKey << " não encontrado na árvore.\n";
     }
+
+    cout << "\nInOrder: ";
+    tree.inOrder();
+    cout << "\nPreOrder: ";
+    tree.preOrder();
+    cout << "\nPosOrder: ";
+    tree.posOrder();
 
     cout << "\nO menor numero da arvore é: " << tree.getMin() << endl;
     cout << "O maior numero da arvore é: " << tree.getMax() << endl;
